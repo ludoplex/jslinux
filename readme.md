@@ -1,11 +1,11 @@
 
-Fork form [https://github.com/levskaya/jslinux-deobfuscated]()
+Fork form https://github.com/levskaya/jslinux-deobfuscated
 
 # JSLinux Study
 
-- [https://github.com/levskaya/jslinux-deobfuscated]()
-- [https://github.com/tlrobinson/node-jslinux]()
-- [https://github.com/ewiger/jsmodem]()
+- https://github.com/levskaya/jslinux-deobfuscated
+- https://github.com/tlrobinson/node-jslinux
+- https://github.com/ewiger/jsmodem
 
 De-obfuscated JSLinux
 =========================================================
