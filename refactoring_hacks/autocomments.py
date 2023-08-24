@@ -18,53 +18,24 @@ twosies=soup.find('two-byte').findAll('pri_opcd')
 
 def hexRepOfOp(op):
     i=int(op['value'],16)
-    if i < 16:
-        return ("0x0"+hex(i)[2:]).lower()
-    else:
-        return ("0x" +hex(i)[2:]).lower()
+    return f"0x0{hex(i)[2:]}".lower() if i < 16 else f"0x{hex(i)[2:]}".lower()
 def mnem(op):
-    res = op.find('mnem')
-    if res:
-        return res.string
-    else:
-        return ""
+    return res.string if (res := op.find('mnem')) else ""
 def src(op):
-    res = op.find('syntax').find('src')
-    if res:
-        return res.getText()
-    else:
-        return ""
+    return res.getText() if (res := op.find('syntax').find('src')) else ""
 def dst(op):
-    res = op.find('syntax').find('dst')
-    if res:
-        return res.getText()
-    else:
-        return ""
+    return res.getText() if (res := op.find('syntax').find('dst')) else ""
 def note(op):
-    res = op.find('note').find('brief')
-    if res:
-        return res.getText()
-    else:
-        return ""
+    return res.getText() if (res := op.find('note').find('brief')) else ""
 def opstr(op):
-    return mnem(op)+" "+src(op)+" "+dst(op)+" "+note(op)
+    return f"{mnem(op)} {src(op)} {dst(op)} {note(op)}"
 
-onedict = {}
-for op in onesies:
-    onedict[hexRepOfOp(op)] = opstr(op)
-twodict = {}
-for op in twosies:
-    twodict[hexRepOfOp(op)] = opstr(op)
-
-# barf some temporaries just for reference later
-outfile=open("onebyte_dict.json",'w')
-json.dump(onedict,outfile)
-outfile.close()
-
-outfile=open("twobyte_dict.json",'w')
-json.dump(twodict,outfile)
-outfile.close()
-
+onedict = {hexRepOfOp(op): opstr(op) for op in onesies}
+twodict = {hexRepOfOp(op): opstr(op) for op in twosies}
+with open("onebyte_dict.json",'w') as outfile:
+    json.dump(onedict,outfile)
+with open("twobyte_dict.json",'w') as outfile:
+    json.dump(twodict,outfile)
 # now transform source file --------------------------------------------------------------------------------
 
 # - for weird exec counting function
@@ -97,8 +68,7 @@ for i,line in enumerate(emulatorlines):
     if i < onebyte_start:
         newlines.append(line)
     if onebyte_start <= i < twobyte_start: #one-byte instructions
-        linematch=caseline.match(line)
-        if linematch:
+        if linematch := caseline.match(line):
             try:
                 newlines.append(linematch.group(1)+linematch.group(2)+"://"+onedict[strip_1(linematch.group(2))]+"\n")
             except KeyError:
@@ -106,8 +76,7 @@ for i,line in enumerate(emulatorlines):
         else:
             newlines.append(line)
     if twobyte_start <= i < twobyte_end: #two-byte instructions
-        linematch=caseline.match(line)
-        if linematch:
+        if linematch := caseline.match(line):
             try:
                 newlines.append(linematch.group(1)+linematch.group(2)+"://"+twodict[strip_1(linematch.group(2))]+"\n")
             except KeyError:
@@ -117,6 +86,5 @@ for i,line in enumerate(emulatorlines):
     if twobyte_end <= i:
         newlines.append(line)
 
-outfile=open("cpux86-ta-auto-annotated.js",'w')
-outfile.writelines(newlines)
-outfile.close()
+with open("cpux86-ta-auto-annotated.js",'w') as outfile:
+    outfile.writelines(newlines)
